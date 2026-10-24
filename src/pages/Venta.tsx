@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Banknote, Camera, CheckCircle2, Minus, Plus, Search, Split, Trash2, Landmark, WifiOff, Percent } from 'lucide-react'
+import { Banknote, Camera, CheckCircle2, Minus, Plus, ScanLine, Search, Split, Trash2, Landmark, WifiOff, Percent } from 'lucide-react'
 import { currentSession, sellableStockOf, useMe, useOnline, useStore, type CartLine } from '../store'
 import { businesses } from '../data/seed'
 import { can, discountCap } from '../lib/permissions'
 import { formatCuit, money } from '../lib/format'
 import { demoCuits, lookupCuit } from '../lib/arca'
 import type { Customer, Payment, ReceiptKind, Sale } from '../types'
-import { Badge, Button, Card, Input, Modal, Select, cx } from '../components/ui'
+import { Badge, Button, Input, Modal, Select, cx } from '../components/ui'
 import Scanner from '../components/Scanner'
 import Receipt from '../components/Receipt'
 import { OpenSessionForm } from './Caja'
+import { categoryStyle } from '../lib/categories'
 
 type Method = 'efectivo' | 'transferencia' | 'mixto'
 
@@ -97,49 +98,78 @@ export default function Venta() {
   return (
     <div className="mx-auto grid max-w-7xl gap-4 pb-20 lg:grid-cols-[1fr_380px] lg:pb-0">
       {/* Productos */}
-      <div className="min-w-0">
+      <div className="min-w-0 animate-rise">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-300" />
             <input
               ref={searchRef}
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearchEnter()}
-              placeholder="Buscar por nombre o escanear código de barras…"
-              className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-10 pr-3 text-base outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+              placeholder="Buscar producto o escanear código…"
+              className="h-14 w-full rounded-2xl border-0 bg-white pl-12 pr-24 text-base font-medium text-ink-900 shadow-soft ring-1 ring-ink-900/[0.06] outline-none transition placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
             />
+            <kbd className="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-md bg-canvas px-2 py-1 text-[10px] font-bold text-ink-400 ring-1 ring-ink-200 sm:block">ENTER</kbd>
           </div>
-          <Button variant="secondary" size="lg" onClick={() => setScanOpen(true)} title="Escanear con la cámara">
-            <Camera size={20} />
-          </Button>
+          <button
+            onClick={() => setScanOpen(true)}
+            title="Escanear con la cámara"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink-900 text-lime-400 shadow-soft transition hover:bg-ink-800 active:scale-95"
+          >
+            <Camera size={22} />
+          </button>
         </div>
-        <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
-          <button onClick={() => setCategory(null)} className={cx('whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium', !category ? 'bg-brand-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200')}>
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setCategory(null)}
+            className={cx('whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition', !category ? 'bg-ink-900 text-white' : 'bg-white text-ink-600 ring-1 ring-ink-200 hover:ring-ink-300')}
+          >
             Todo
           </button>
-          {categories.map((c) => (
-            <button key={c} onClick={() => setCategory(c === category ? null : c)} className={cx('whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium', category === c ? 'bg-brand-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200')}>
-              {c}
-            </button>
-          ))}
+          {categories.map((c) => {
+            const { icon: Icon } = categoryStyle(c)
+            return (
+              <button
+                key={c}
+                onClick={() => setCategory(c === category ? null : c)}
+                className={cx('flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold transition', category === c ? 'bg-ink-900 text-white' : 'bg-white text-ink-600 ring-1 ring-ink-200 hover:ring-ink-300')}
+              >
+                <Icon size={14} className={category === c ? 'text-lime-400' : 'text-ink-400'} />
+                {c}
+              </button>
+            )
+          })}
         </div>
-        {notice && <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{notice}</div>}
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+        {notice && <div className="mt-3 rounded-xl bg-amber-50 px-5 py-3.5 text-sm font-medium text-amber-800 ring-1 ring-amber-200 animate-rise">{notice}</div>}
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => {
             const stock = sellableStockOf(state.lots, p.id)
+            const qtyInCart = cart.find((l) => l.productId === p.id)?.qty ?? 0
+            const { icon: Icon, tone } = categoryStyle(p.category)
             return (
               <button
                 key={p.id}
                 onClick={() => add(p.id)}
-                className={cx('flex flex-col rounded-xl border bg-white p-3 text-left transition hover:border-brand-500 hover:shadow-sm', stock === 0 ? 'border-slate-200 opacity-50' : 'border-slate-200')}
+                disabled={stock === 0}
+                className={cx(
+                  'group relative flex flex-col rounded-2xl bg-white p-3.5 text-left shadow-soft ring-1 transition',
+                  qtyInCart ? 'ring-2 ring-brand-500' : 'ring-ink-900/[0.06] hover:-translate-y-0.5 hover:shadow-lift hover:ring-brand-200',
+                  stock === 0 && 'cursor-not-allowed opacity-40 hover:translate-y-0',
+                )}
               >
-                <span className="line-clamp-2 min-h-[2.5rem] text-sm font-medium text-slate-800">{p.name}</span>
-                <span className="tabular mt-1 text-base font-semibold text-brand-700">{money(p.price)}</span>
-                <span className={cx('mt-0.5 text-[11px]', stock <= p.minStock ? 'text-amber-600' : 'text-slate-400')}>
-                  Stock {stock}
-                  {!p.barcode && ' · sin código'}
+                <div className="mb-3 flex items-start justify-between">
+                  <span className={cx('flex h-10 w-10 items-center justify-center rounded-xl', tone)}>
+                    <Icon size={20} />
+                  </span>
+                  {qtyInCart > 0 && <span className="tabular flex h-7 min-w-7 items-center justify-center rounded-full bg-brand-500 px-2 text-xs font-extrabold text-white animate-pop">{qtyInCart}</span>}
+                </div>
+                <span className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-ink-900">{p.name}</span>
+                <span className="tabular mt-2 text-lg font-extrabold tracking-tight text-ink-900">{money(p.price)}</span>
+                <span className={cx('mt-0.5 text-[11px] font-semibold', stock === 0 ? 'text-rose-600' : stock <= p.minStock ? 'text-amber-600' : 'text-ink-300')}>
+                  {stock === 0 ? 'Sin stock' : `${stock} en stock`}
+                  {!p.barcode && <span className="text-ink-300"> · sin código</span>}
                 </span>
               </button>
             )
@@ -147,55 +177,68 @@ export default function Venta() {
         </div>
       </div>
 
-      {/* Ticket */}
-      <Card className="flex h-fit flex-col lg:sticky lg:top-0">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <div className="font-semibold">Ticket</div>
-          <div className="text-xs text-slate-500">
-            {session.register} · {me.name.split(' ')[0]}
+      {/* Ticket: panel oscuro para que el total sea lo primero que se ve */}
+      <div className="ink-surface flex h-fit flex-col overflow-hidden rounded-3xl text-white shadow-2xl animate-rise lg:sticky lg:top-0">
+        <div className="flex items-center justify-between px-5 pb-3 pt-5">
+          <div>
+            <div className="text-lg font-extrabold tracking-tight">Ticket</div>
+            <div className="text-xs font-medium text-ink-300">
+              {session.register} · {me.name.split(' ')[0]}
+            </div>
           </div>
+          {lines.length > 0 && (
+            <button onClick={() => setCart([])} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ink-300 transition hover:bg-white/10 hover:text-white">
+              Vaciar
+            </button>
+          )}
         </div>
         {!online && (
-          <div className="flex items-center gap-2 bg-rose-50 px-4 py-2 text-xs text-rose-700">
-            <WifiOff size={14} /> Sin conexión: se puede vender y cobrar en efectivo. Todo queda guardado en el equipo.
+          <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl bg-rose-500/15 px-3 py-2 text-xs font-medium text-rose-200 ring-1 ring-rose-400/30">
+            <WifiOff size={14} className="mt-px shrink-0" /> Sin conexión: se puede vender y cobrar en efectivo. Todo queda guardado en el equipo.
           </div>
         )}
-        <div className="max-h-[45vh] min-h-[160px] overflow-y-auto px-2 py-2">
+        <div className="max-h-[42vh] min-h-[180px] overflow-y-auto px-3">
           {lines.length === 0 ? (
-            <div className="px-2 py-10 text-center text-sm text-slate-400">Escaneá o tocá un producto para agregarlo</div>
+            <div className="flex flex-col items-center px-2 py-12 text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.06] text-ink-300">
+                <ScanLine size={22} />
+              </div>
+              <div className="text-sm font-semibold text-ink-200">Ticket vacío</div>
+              <div className="mt-0.5 text-xs text-ink-400">Escaneá o tocá un producto para agregarlo</div>
+            </div>
           ) : (
             lines.map((l) => (
-              <div key={l.productId} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <div key={l.productId} className="group flex items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-white/[0.05]">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium">{l.product.name}</div>
-                  <div className="tabular text-xs text-slate-500">{money(l.product.price)} c/u</div>
+                  <div className="truncate text-sm font-semibold">{l.product.name}</div>
+                  <div className="tabular text-xs text-ink-300">{money(l.product.price)} c/u</div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center rounded-lg bg-white/[0.07] p-0.5">
                   <button
-                    className="rounded-md p-1 text-slate-500 hover:bg-slate-200"
+                    className="rounded-md p-1.5 text-ink-200 transition hover:bg-white/10"
                     onClick={() => setCart((c) => c.flatMap((x) => (x.productId === l.productId ? (x.qty > 1 ? [{ ...x, qty: x.qty - 1 }] : []) : [x])))}
                     aria-label="Quitar uno"
                   >
-                    <Minus size={14} />
+                    <Minus size={13} />
                   </button>
-                  <span className="tabular w-6 text-center text-sm font-semibold">{l.qty}</span>
-                  <button className="rounded-md p-1 text-slate-500 hover:bg-slate-200" onClick={() => add(l.productId)} aria-label="Agregar uno">
-                    <Plus size={14} />
+                  <span className="tabular w-6 text-center text-sm font-bold">{l.qty}</span>
+                  <button className="rounded-md p-1.5 text-ink-200 transition hover:bg-white/10" onClick={() => add(l.productId)} aria-label="Agregar uno">
+                    <Plus size={13} />
                   </button>
                 </div>
-                <div className="tabular w-20 text-right text-sm font-semibold">{money(l.qty * l.product.price)}</div>
-                <button className="rounded-md p-1 text-slate-400 hover:text-rose-600" onClick={() => setCart((c) => c.filter((x) => x.productId !== l.productId))} aria-label="Eliminar">
+                <div className="tabular w-[84px] text-right text-sm font-bold">{money(l.qty * l.product.price)}</div>
+                <button className="rounded-md p-1 text-ink-400 transition hover:text-rose-400" onClick={() => setCart((c) => c.filter((x) => x.productId !== l.productId))} aria-label="Eliminar">
                   <Trash2 size={14} />
                 </button>
               </div>
             ))
           )}
         </div>
-        <div className="border-t border-slate-100 px-4 py-3">
+        <div className="mt-2 border-t border-white/10 px-5 pb-5 pt-4">
           {can(me.role, 'descuento') ? (
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="flex items-center gap-1 text-slate-600">
-                <Percent size={14} /> Descuento <span className="text-xs text-slate-400">(tope {cap}%)</span>
+            <div className="mb-3 flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 font-medium text-ink-200">
+                <Percent size={14} className="text-lime-400" /> Descuento <span className="text-xs text-ink-400">tope {cap}%</span>
               </span>
               <input
                 type="number"
@@ -204,36 +247,38 @@ export default function Venta() {
                 value={discount || ''}
                 placeholder="0"
                 onChange={(e) => setDiscount(Math.max(0, Math.min(cap, Number(e.target.value) || 0)))}
-                className="tabular w-16 rounded-md border border-slate-300 px-2 py-1 text-right text-sm"
+                className="tabular w-16 rounded-lg border-0 bg-white/10 px-2 py-1.5 text-right text-sm font-bold text-white outline-none ring-1 ring-white/15 placeholder:text-ink-400 focus:ring-lime-400"
               />
             </div>
           ) : (
-            <div className="mb-2 text-xs text-slate-400">Tu rol no permite aplicar descuentos.</div>
+            <div className="mb-3 text-xs text-ink-400">Tu rol no permite aplicar descuentos.</div>
           )}
           {discount > 0 && (
-            <div className="flex justify-between text-sm text-slate-500">
+            <div className="flex justify-between text-sm text-ink-300">
               <span>Subtotal</span>
-              <span className="tabular">{money(subtotal)}</span>
+              <span className="tabular line-through">{money(subtotal)}</span>
             </div>
           )}
           <div className="flex items-end justify-between">
-            <span className="text-sm text-slate-600">Total</span>
-            <span className="tabular text-3xl font-bold text-slate-900">{money(total)}</span>
+            <span className="pb-1.5 text-sm font-semibold text-ink-300">Total</span>
+            <span key={total} className="tabular text-4xl font-extrabold tracking-tight text-lime-400 animate-pop">
+              {money(total)}
+            </span>
           </div>
-          <Button size="lg" className="mt-3 w-full" disabled={!lines.length} onClick={() => setPayOpen(true)}>
+          <Button variant="lime" size="lg" className="mt-4 h-14 w-full text-lg" disabled={!lines.length} onClick={() => setPayOpen(true)}>
             Cobrar
           </Button>
         </div>
-      </Card>
+      </div>
 
       {/* en el teléfono el ticket queda abajo: barra fija con total y cobro */}
       {lines.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-slate-200 bg-white px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] lg:hidden">
+        <div className="fixed inset-x-3 bottom-3 z-30 flex items-center gap-3 rounded-2xl bg-ink-900 px-4 py-3 text-white shadow-2xl lg:hidden">
           <div className="flex-1">
-            <div className="text-xs text-slate-500">{lines.reduce((a, l) => a + l.qty, 0)} productos</div>
-            <div className="tabular text-xl font-bold">{money(total)}</div>
+            <div className="text-xs font-medium text-ink-300">{lines.reduce((a, l) => a + l.qty, 0)} productos</div>
+            <div className="tabular text-xl font-extrabold text-lime-400">{money(total)}</div>
           </div>
-          <Button size="lg" onClick={() => setPayOpen(true)}>
+          <Button variant="lime" size="lg" onClick={() => setPayOpen(true)}>
             Cobrar
           </Button>
         </div>
@@ -313,12 +358,12 @@ function UnknownCodeModal({ code, onClose, onAssigned }: { code: string | null; 
   const allowed = can(me.role, 'codigo.asignar')
   return (
     <Modal open={!!code} onClose={onClose} title="Código no registrado">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-ink-600">
         El código <span className="font-mono font-semibold">{code}</span> todavía no está cargado en el catálogo.
       </p>
       {allowed ? (
         <>
-          <p className="mt-2 text-sm text-slate-600">Asignalo al producto correspondiente: la próxima vez se reconoce solo.</p>
+          <p className="mt-2 text-sm text-ink-600">Asignalo al producto correspondiente: la próxima vez se reconoce solo.</p>
           <div className="mt-3">
             <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">Elegir producto sin código…</option>
@@ -438,7 +483,7 @@ function PaymentModal({
           <button
             key={m}
             onClick={() => setMethod(m)}
-            className={cx('flex flex-col items-center gap-1 rounded-xl border py-3 text-sm font-medium', method === m ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50')}
+            className={cx('flex flex-col items-center gap-1 rounded-xl border py-3 text-sm font-medium', method === m ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-ink-900/10 text-ink-600 hover:bg-canvas')}
           >
             <Icon size={20} /> {label}
           </button>
@@ -449,8 +494,8 @@ function PaymentModal({
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Input label="Parte en efectivo" type="number" min={0} value={cashPart} onChange={(e) => setCashPart(e.target.value)} autoFocus />
           <div>
-            <span className="mb-1 block text-xs font-medium text-slate-600">Parte por transferencia</span>
-            <div className="tabular rounded-lg bg-slate-50 px-3 py-2 text-sm font-semibold">{money(transferAmount)}</div>
+            <span className="mb-1 block text-xs font-medium text-ink-600">Parte por transferencia</span>
+            <div className="tabular rounded-lg bg-canvas px-3 py-2 text-sm font-semibold">{money(transferAmount)}</div>
           </div>
         </div>
       )}
@@ -476,7 +521,7 @@ function PaymentModal({
               ))}
           </div>
           <div className={cx('mt-3 flex items-center justify-between rounded-xl px-4 py-3', change < 0 ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-800')}>
-            <span className="text-sm font-medium">{change < 0 ? 'Falta' : 'Vuelto'}</span>
+            <span className="text-sm font-bold">{change < 0 ? 'Falta' : 'Vuelto'}</span>
             <span className="tabular text-2xl font-bold">{money(Math.abs(change))}</span>
           </div>
         </div>
@@ -493,8 +538,8 @@ function PaymentModal({
         </div>
       )}
 
-      <div className="mt-5 border-t border-slate-100 pt-4">
-        <div className="mb-2 text-xs font-medium text-slate-600">Comprobante</div>
+      <div className="mt-5 border-t border-ink-900/[0.06] pt-4">
+        <div className="mb-2 text-xs font-medium text-ink-600">Comprobante</div>
         <div className="grid grid-cols-3 gap-2">
           {(
             [
@@ -503,9 +548,9 @@ function PaymentModal({
               ['ticket', 'Interno', 'Sin factura'],
             ] as const
           ).map(([k, label, hint]) => (
-            <button key={k} onClick={() => setKind(k)} className={cx('rounded-xl border px-2 py-2 text-left', kind === k ? 'border-brand-600 bg-brand-50' : 'border-slate-200 hover:bg-slate-50')}>
-              <div className="text-sm font-medium">{label}</div>
-              <div className="text-[11px] text-slate-500">{hint}</div>
+            <button key={k} onClick={() => setKind(k)} className={cx('rounded-xl border px-2 py-2 text-left', kind === k ? 'border-brand-600 bg-brand-50' : 'border-ink-900/10 hover:bg-canvas')}>
+              <div className="text-sm font-bold">{label}</div>
+              <div className="text-[11px] text-ink-400">{hint}</div>
             </button>
           ))}
         </div>
@@ -517,7 +562,7 @@ function PaymentModal({
                 Consultar
               </Button>
             </div>
-            <div className="mt-1.5 flex flex-wrap gap-1 text-[11px] text-slate-500">
+            <div className="mt-1.5 flex flex-wrap gap-1 text-[11px] text-ink-400">
               CUITs de prueba:
               {demoCuits.map((c) => (
                 <button key={c} className="font-mono text-brand-700 hover:underline" onClick={() => setCuit(c)}>
@@ -527,9 +572,9 @@ function PaymentModal({
             </div>
             {cuitError && <div className="mt-2 text-xs text-rose-600">{cuitError}</div>}
             {customer && (
-              <div className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                <div className="font-medium">{customer.name}</div>
-                <div className="text-xs text-slate-500">
+              <div className="mt-2 rounded-lg bg-canvas px-3 py-2 text-sm">
+                <div className="font-bold">{customer.name}</div>
+                <div className="text-xs text-ink-400">
                   {customer.ivaCondition} · {customer.address}
                 </div>
               </div>

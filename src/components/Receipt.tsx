@@ -35,13 +35,13 @@ export default function Receipt({ sale, invoiceId }: { sale: Sale; invoiceId?: s
 
   return (
     <div>
-      <div className="print-area mx-auto max-w-sm rounded-lg border border-dashed border-slate-300 bg-white p-4 font-mono text-[12px] leading-relaxed text-slate-800">
+      <div className="print-area mx-auto max-w-sm rounded-lg border border-dashed border-ink-200 bg-white p-4 font-mono text-[12px] leading-relaxed text-ink-900">
         <div className="text-center">
           <div className="text-sm font-bold">{biz.legalName}</div>
           <div>CUIT {formatCuit(biz.cuit)} · {biz.ivaCondition}</div>
           <div>{biz.address}</div>
         </div>
-        <div className="my-2 border-t border-dashed border-slate-300" />
+        <div className="my-2 border-t border-dashed border-ink-200" />
         {inv ? (
           <div className="text-center">
             <div className="text-sm font-bold uppercase">{inv.kind}</div>
@@ -62,7 +62,7 @@ export default function Receipt({ sale, invoiceId }: { sale: Sale; invoiceId?: s
             {inv.customer.ivaCondition}
           </div>
         )}
-        <div className="my-2 border-t border-dashed border-slate-300" />
+        <div className="my-2 border-t border-dashed border-ink-200" />
         {sale.items.map((i) => (
           <div key={i.productId} className="flex justify-between gap-2">
             <span className="truncate">
@@ -71,7 +71,7 @@ export default function Receipt({ sale, invoiceId }: { sale: Sale; invoiceId?: s
             <span className="tabular shrink-0">{money(i.qty * i.unitPrice)}</span>
           </div>
         ))}
-        <div className="my-2 border-t border-dashed border-slate-300" />
+        <div className="my-2 border-t border-dashed border-ink-200" />
         {sale.discountPct > 0 && (
           <div className="flex justify-between">
             <span>Descuento {sale.discountPct}%</span>
@@ -98,7 +98,7 @@ export default function Receipt({ sale, invoiceId }: { sale: Sale; invoiceId?: s
 
         {inv && inv.status === 'emitido' && inv.cae && inv.number != null && (
           <>
-            <div className="my-2 border-t border-dashed border-slate-300" />
+            <div className="my-2 border-t border-dashed border-ink-200" />
             <div className="flex items-center gap-3">
               <QRCodeSVG
                 value={qrUrl({ date: inv.issuedAt ?? sale.at, cuit: biz.cuit, pos: inv.pointOfSale, kind: inv.kind, number: inv.number, total: inv.total, customerCuit: inv.customer.cuit, cae: inv.cae })}
@@ -107,7 +107,7 @@ export default function Receipt({ sale, invoiceId }: { sale: Sale; invoiceId?: s
               <div>
                 <div className="font-bold">CAE {inv.cae}</div>
                 <div>Vto. CAE {inv.caeExpiry?.split('-').reverse().join('/')}</div>
-                <div className="mt-1 text-[10px] text-slate-500">Comprobante autorizado (simulación de ARCA)</div>
+                <div className="mt-1 text-[10px] text-ink-400">Comprobante autorizado (simulación de ARCA)</div>
               </div>
             </div>
           </>

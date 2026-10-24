@@ -23,7 +23,7 @@ export default function Alertas() {
         tag="M2"
         subtitle="Alertas de stock mínimo y de vencimiento próximo."
         actions={
-          <label className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm ring-1 ring-slate-200">
+          <label className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm ring-1 ring-ink-200">
             Avisar con
             <input
               type="number"
@@ -31,7 +31,7 @@ export default function Alertas() {
               max={60}
               value={state.expiryWarnDays}
               onChange={(e) => state.setExpiryWarnDays(Number(e.target.value))}
-              className="tabular w-12 rounded border border-slate-300 px-1 py-0.5 text-right"
+              className="tabular w-12 rounded border border-ink-200 px-1 py-0.5 text-right"
             />
             días de anticipación
           </label>
@@ -40,17 +40,17 @@ export default function Alertas() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-1">
-          <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 font-semibold text-rose-700">
+          <div className="flex items-center gap-2 border-b border-ink-900/[0.06] px-4 py-3 font-semibold text-rose-700">
             <AlertOctagon size={18} /> Vencidos <Badge tone="red">{expired.length}</Badge>
           </div>
           {expired.length === 0 ? (
             <Empty>Sin productos vencidos.</Empty>
           ) : (
             expired.map((l) => (
-              <div key={l.id} className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5 last:border-0">
+              <div key={l.id} className="flex items-center justify-between gap-2 border-b border-ink-900/[0.06] px-5 py-3.5 last:border-0">
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-medium">{byId.get(l.productId)!.name}</div>
-                  <div className="text-xs text-slate-500">
+                  <div className="truncate text-sm font-bold">{byId.get(l.productId)!.name}</div>
+                  <div className="text-xs text-ink-400">
                     Lote {l.code} · venció {date(l.expiry!)} · {l.qty} u.
                   </div>
                 </div>
@@ -68,7 +68,7 @@ export default function Alertas() {
         </Card>
 
         <Card>
-          <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 font-semibold text-amber-700">
+          <div className="flex items-center gap-2 border-b border-ink-900/[0.06] px-4 py-3 font-semibold text-amber-700">
             <CalendarClock size={18} /> Por vencer <Badge tone="amber">{soon.length}</Badge>
           </div>
           {soon.length === 0 ? (
@@ -77,10 +77,10 @@ export default function Alertas() {
             soon.map((l) => {
               const d = daysUntil(l.expiry!)
               return (
-                <div key={l.id} className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5 last:border-0">
+                <div key={l.id} className="flex items-center justify-between gap-2 border-b border-ink-900/[0.06] px-5 py-3.5 last:border-0">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{byId.get(l.productId)!.name}</div>
-                    <div className="text-xs text-slate-500">
+                    <div className="truncate text-sm font-bold">{byId.get(l.productId)!.name}</div>
+                    <div className="text-xs text-ink-400">
                       Lote {l.code} · {date(l.expiry!)} · {l.qty} u.
                     </div>
                   </div>
@@ -95,17 +95,17 @@ export default function Alertas() {
         </Card>
 
         <Card>
-          <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 font-semibold text-slate-800">
+          <div className="flex items-center gap-2 border-b border-ink-900/[0.06] px-4 py-3 font-semibold text-ink-900">
             <PackageMinus size={18} /> Stock bajo el mínimo <Badge>{low.length}</Badge>
           </div>
           {low.length === 0 ? (
             <Empty>Todo el stock está por encima del mínimo.</Empty>
           ) : (
             low.map(({ p, stock }) => (
-              <div key={p.id} className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5 last:border-0">
+              <div key={p.id} className="flex items-center justify-between gap-2 border-b border-ink-900/[0.06] px-5 py-3.5 last:border-0">
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-medium">{p.name}</div>
-                  <div className="text-xs text-slate-500">Mínimo {p.minStock}</div>
+                  <div className="truncate text-sm font-bold">{p.name}</div>
+                  <div className="text-xs text-ink-400">Mínimo {p.minStock}</div>
                 </div>
                 <span className={`tabular text-sm font-semibold ${stock <= 0 ? 'text-rose-600' : 'text-amber-600'}`}>{stock} u.</span>
               </div>

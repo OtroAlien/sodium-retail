@@ -70,7 +70,7 @@ export default function Scanner({ open, onClose, onCode }: { open: boolean; onCl
           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-0.5 -translate-y-1/2 bg-rose-500/80" />
         </div>
       )}
-      <p className="mt-3 text-xs text-slate-500">Apuntá al código de barras del producto. Se agrega solo al leerlo.</p>
+      <p className="mt-3 text-xs text-ink-400">Apuntá al código de barras del producto. Se agrega solo al leerlo.</p>
     </Modal>
   )
 }

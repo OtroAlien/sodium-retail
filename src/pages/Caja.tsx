@@ -13,10 +13,10 @@ export function OpenSessionForm({ compact }: { compact?: boolean }) {
   const [error, setError] = useState('')
   return (
     <Card className={cx('p-5', compact ? '' : 'max-w-xl')}>
-      <div className="mb-1 flex items-center gap-2 font-semibold text-slate-900">
+      <div className="mb-1 flex items-center gap-2 font-semibold text-ink-900">
         <LockOpen size={18} className="text-brand-600" /> Abrir caja
       </div>
-      <p className="mb-4 text-sm text-slate-500">No se puede vender sin una caja abierta a tu nombre.</p>
+      <p className="mb-4 text-sm text-ink-400">No se puede vender sin una caja abierta a tu nombre.</p>
       <div className="grid gap-3 sm:grid-cols-3">
         <Input label="Monto inicial en efectivo" type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} />
         <Select label="Caja" value={register} onChange={(e) => setRegister(e.target.value)}>
@@ -39,8 +39,8 @@ export function OpenSessionForm({ compact }: { compact?: boolean }) {
 
 function Row({ label, value, strong, tone }: { label: string; value: string; strong?: boolean; tone?: string }) {
   return (
-    <div className={cx('flex justify-between py-1.5 text-sm', strong && 'border-t border-slate-200 pt-2.5 font-semibold')}>
-      <span className="text-slate-600">{label}</span>
+    <div className={cx('flex justify-between py-1.5 text-sm', strong && 'border-t border-ink-900/10 pt-2.5 font-semibold')}>
+      <span className="text-ink-600">{label}</span>
       <span className={cx('tabular', tone)}>{value}</span>
     </div>
   )
@@ -82,21 +82,21 @@ export default function Caja() {
                 </span>
                 <Badge tone="green">Abierta</Badge>
               </div>
-              <span className="text-xs text-slate-500">Desde las {time(session.openedAt)} · {totals!.count} ventas</span>
+              <span className="text-xs text-ink-400">Desde las {time(session.openedAt)} · {totals!.count} ventas</span>
             </div>
             <Row label="Monto inicial" value={money(session.openingAmount)} />
             <Row label="Ventas en efectivo" value={money(totals!.cash)} />
             <Row label="Ingresos manuales" value={money(totals!.ins)} />
             <Row label="Retiros" value={'-' + money(totals!.outs)} />
             <Row label="Efectivo esperado en caja" value={money(totals!.expected)} strong />
-            <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              Transferencias del turno: <span className="tabular font-medium text-slate-800">{money(totals!.transfer)}</span> (no suman al efectivo)
+            <div className="mt-3 rounded-lg bg-canvas px-3 py-2 text-sm text-ink-600">
+              Transferencias del turno: <span className="tabular font-medium text-ink-900">{money(totals!.transfer)}</span> (no suman al efectivo)
             </div>
             {session.movements.length > 0 && (
               <div className="mt-4">
-                <div className="mb-1 text-xs font-semibold uppercase text-slate-500">Movimientos</div>
+                <div className="mb-1 text-xs font-semibold uppercase text-ink-400">Movimientos</div>
                 {session.movements.map((m) => (
-                  <div key={m.id} className="flex justify-between border-b border-slate-100 py-1.5 text-sm last:border-0">
+                  <div key={m.id} className="flex justify-between border-b border-ink-900/[0.06] py-1.5 text-sm last:border-0">
                     <span>
                       {time(m.at)} · {m.type === 'retiro' ? 'Retiro' : 'Ingreso'}: {m.reason}
                     </span>
@@ -127,40 +127,40 @@ export default function Caja() {
         </div>
       )}
 
-      <h2 className="mb-2 mt-8 font-semibold text-slate-900">{can(me.role, 'caja.verTodas') ? 'Cierres de todas las cajas' : 'Mis cierres'}</h2>
+      <h2 className="mb-2 mt-8 font-semibold text-ink-900">{can(me.role, 'caja.verTodas') ? 'Cierres de todas las cajas' : 'Mis cierres'}</h2>
       {msg && <div className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{msg}</div>}
       <Card className="overflow-x-auto">
         {history.length === 0 ? (
           <Empty>Todavía no hay cajas en este negocio. Abrí una para empezar a vender.</Empty>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-500">
+            <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
               <tr>
-                <th className="px-4 py-2 font-medium">Caja / turno</th>
-                <th className="px-4 py-2 font-medium">Cajero</th>
-                <th className="px-4 py-2 font-medium">Apertura</th>
-                <th className="px-4 py-2 text-right font-medium">Esperado</th>
-                <th className="px-4 py-2 text-right font-medium">Contado</th>
-                <th className="px-4 py-2 text-right font-medium">Diferencia</th>
-                <th className="px-4 py-2" />
+                <th className="px-5 py-3 font-bold">Caja / turno</th>
+                <th className="px-5 py-3 font-bold">Cajero</th>
+                <th className="px-5 py-3 font-bold">Apertura</th>
+                <th className="px-5 py-3 text-right font-bold">Esperado</th>
+                <th className="px-5 py-3 text-right font-bold">Contado</th>
+                <th className="px-5 py-3 text-right font-bold">Diferencia</th>
+                <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody>
               {history.map((s) => {
                 const diff = s.closedAt ? (s.countedAmount ?? 0) - (s.expectedAmount ?? 0) : null
                 return (
-                  <tr key={s.id} className="border-t border-slate-100">
-                    <td className="px-4 py-2.5">
+                  <tr key={s.id} className="border-t border-ink-900/[0.06] transition-colors hover:bg-brand-50/40">
+                    <td className="px-5 py-3.5">
                       {s.register} · {s.shift}
                     </td>
-                    <td className="px-4 py-2.5">{userName(s.userId)}</td>
-                    <td className="px-4 py-2.5 text-slate-500">{dateTime(s.openedAt)}</td>
-                    <td className="tabular px-4 py-2.5 text-right">{s.closedAt ? money(s.expectedAmount!) : '—'}</td>
-                    <td className="tabular px-4 py-2.5 text-right">{s.closedAt ? money(s.countedAmount!) : '—'}</td>
-                    <td className={cx('tabular px-4 py-2.5 text-right font-medium', diff === null ? '' : diff === 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                    <td className="px-5 py-3.5">{userName(s.userId)}</td>
+                    <td className="px-5 py-3.5 text-ink-400">{dateTime(s.openedAt)}</td>
+                    <td className="tabular px-5 py-3.5 text-right">{s.closedAt ? money(s.expectedAmount!) : '—'}</td>
+                    <td className="tabular px-5 py-3.5 text-right">{s.closedAt ? money(s.countedAmount!) : '—'}</td>
+                    <td className={cx('tabular px-5 py-3.5 text-right font-medium', diff === null ? '' : diff === 0 ? 'text-emerald-600' : 'text-rose-600')}>
                       {diff === null ? <Badge tone="green">Abierta</Badge> : (diff > 0 ? '+' : '') + money(diff)}
                     </td>
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="px-5 py-3.5 text-right">
                       {s.closedAt && can(me.role, 'caja.reabrir') && (
                         <Button size="sm" variant="ghost" onClick={() => setMsg(state.reopenSession(s.id) ?? '')}>
                           Reabrir
@@ -231,7 +231,7 @@ export default function Caja() {
                 tone={Number(counted) === totals.expected ? 'text-emerald-600' : 'text-rose-600'}
               />
             )}
-            <p className="mt-3 text-xs text-slate-500">El cierre queda en el registro de auditoría con el esperado, el contado y la diferencia.</p>
+            <p className="mt-3 text-xs text-ink-400">El cierre queda en el registro de auditoría con el esperado, el contado y la diferencia.</p>
           </div>
         )}
       </Modal>

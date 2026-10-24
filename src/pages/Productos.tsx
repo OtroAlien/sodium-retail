@@ -5,6 +5,7 @@ import { can } from '../lib/permissions'
 import { date, dateTime, daysUntil, money } from '../lib/format'
 import type { Product } from '../types'
 import { Badge, Button, Card, Input, Modal, PageHeader, Rule, Select, cx } from '../components/ui'
+import { categoryStyle } from '../lib/categories'
 
 /** unidades vendidas en los últimos 7 días por producto */
 function useSold7d() {
@@ -61,7 +62,7 @@ export default function Productos() {
       />
       <div className="mb-3 flex flex-wrap gap-2">
         <div className="relative min-w-[220px] flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
           <Input className="pl-9" placeholder="Buscar por nombre o código" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <Select className="w-48" value={cat} onChange={(e) => setCat(e.target.value)}>
@@ -73,14 +74,14 @@ export default function Productos() {
       </div>
       <Card className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500">
+          <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
             <tr>
-              <th className="px-4 py-2 font-medium">Producto</th>
-              <th className="px-4 py-2 font-medium">Código</th>
-              {showCost && <th className="px-4 py-2 text-right font-medium">Costo</th>}
-              <th className="px-4 py-2 text-right font-medium">Precio</th>
-              {showCost && <th className="px-4 py-2 text-right font-medium">Margen</th>}
-              <th className="px-4 py-2 text-right font-medium">Stock</th>
+              <th className="px-5 py-3 font-bold">Producto</th>
+              <th className="px-5 py-3 font-bold">Código</th>
+              {showCost && <th className="px-5 py-3 text-right font-bold">Costo</th>}
+              <th className="px-5 py-3 text-right font-bold">Precio</th>
+              {showCost && <th className="px-5 py-3 text-right font-bold">Margen</th>}
+              <th className="px-5 py-3 text-right font-bold">Stock</th>
               <th className="px-4 py-2 text-right font-medium" title="Unidades vendidas en los últimos 7 días">Salió 7d</th>
               <th className="px-4 py-2 text-right font-medium" title="Días que dura el stock al ritmo de venta actual">Alcanza</th>
             </tr>
@@ -91,23 +92,28 @@ export default function Productos() {
               const s7 = sold.get(p.id) ?? 0
               const cover = s7 ? Math.round(stock / (s7 / 7)) : null
               return (
-                <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="min-w-[200px] cursor-pointer px-4 py-2" onClick={() => setDetail(p.id)}>
-                    <div className="font-medium text-slate-800 hover:text-brand-700">{p.name}</div>
-                    <div className="text-xs text-slate-500">
-                      {p.category}
-                      {p.tracksLots && ' · por lote'}
+                <tr key={p.id} className="border-t border-ink-900/[0.06] transition-colors hover:bg-brand-50/40">
+                  <td className="min-w-[240px] cursor-pointer px-4 py-2.5" onClick={() => setDetail(p.id)}>
+                    <div className="flex items-center gap-3">
+                      <CategoryIcon category={p.category} />
+                      <div>
+                        <div className="font-semibold text-ink-900 hover:text-brand-600">{p.name}</div>
+                        <div className="text-xs text-ink-400">
+                          {p.category}
+                          {p.tracksLots && ' · por lote'}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs text-slate-500">{p.barcode ?? <Badge tone="amber">sin código</Badge>}</td>
-                  {showCost && <td className="tabular px-4 py-2 text-right text-slate-500">{money(p.cost)}</td>}
+                  <td className="px-4 py-2 font-mono text-xs text-ink-400">{p.barcode ?? <Badge tone="amber">sin código</Badge>}</td>
+                  {showCost && <td className="tabular px-4 py-2 text-right text-ink-400">{money(p.cost)}</td>}
                   <td className="px-4 py-2 text-right">
-                    {canEdit ? <PriceCell product={p} /> : <span className="tabular font-medium">{money(p.price)}</span>}
+                    {canEdit ? <PriceCell product={p} /> : <span className="tabular font-bold">{money(p.price)}</span>}
                   </td>
-                  {showCost && <td className="tabular px-4 py-2 text-right text-slate-500">{p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : 0}%</td>}
+                  {showCost && <td className="tabular px-4 py-2 text-right text-ink-400">{p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : 0}%</td>}
                   <td className={cx('tabular px-4 py-2 text-right font-medium', stock <= p.minStock && 'text-amber-600')}>{stock}</td>
-                  <td className="tabular px-4 py-2 text-right text-slate-600">{s7}</td>
-                  <td className={cx('tabular px-4 py-2 text-right', cover !== null && cover < 4 ? 'text-rose-600' : 'text-slate-500')}>{cover === null ? '—' : `${cover} d`}</td>
+                  <td className="tabular px-4 py-2 text-right text-ink-600">{s7}</td>
+                  <td className={cx('tabular px-4 py-2 text-right', cover !== null && cover < 4 ? 'text-rose-600' : 'text-ink-400')}>{cover === null ? '—' : `${cover} d`}</td>
                 </tr>
               )
             })}
@@ -144,7 +150,7 @@ function PriceCell({ product }: { product: Product }) {
         if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
         if (e.key === 'Escape') setValue(null)
       }}
-      className="tabular w-24 rounded-md border border-transparent bg-transparent px-2 py-1 text-right font-medium hover:border-slate-300 focus:border-brand-600 focus:bg-white focus:outline-none"
+      className="tabular w-24 rounded-md border border-transparent bg-transparent px-2 py-1 text-right font-medium hover:border-ink-200 focus:border-brand-600 focus:bg-white focus:outline-none"
     />
   )
 }
@@ -172,24 +178,24 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
         <Badge tone="brand">{money(p.price)}</Badge>
         {can(me.role, 'costos.ver') && <Badge>Costo {money(p.cost)}</Badge>}
         <Badge>Stock mínimo {p.minStock}</Badge>
-        <span className="font-mono text-xs text-slate-500">{p.barcode ?? 'sin código de barras'}</span>
+        <span className="font-mono text-xs text-ink-400">{p.barcode ?? 'sin código de barras'}</span>
       </div>
 
       <h3 className="mb-1 text-sm font-semibold">Stock por lote</h3>
-      <div className="mb-4 overflow-hidden rounded-lg border border-slate-200">
+      <div className="mb-4 overflow-hidden rounded-lg border border-ink-900/10">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500">
+          <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
             <tr>
-              <th className="px-3 py-1.5 font-medium">Lote</th>
-              <th className="px-3 py-1.5 font-medium">Vencimiento</th>
-              <th className="px-3 py-1.5 text-right font-medium">Cantidad</th>
+              <th className="px-3 py-1.5 font-bold">Lote</th>
+              <th className="px-3 py-1.5 font-bold">Vencimiento</th>
+              <th className="px-3 py-1.5 text-right font-bold">Cantidad</th>
             </tr>
           </thead>
           <tbody>
             {lots.map((l, i) => {
               const d = l.expiry ? daysUntil(l.expiry) : null
               return (
-                <tr key={l.id} className="border-t border-slate-100">
+                <tr key={l.id} className="border-t border-ink-900/[0.06] transition-colors hover:bg-brand-50/40">
                   <td className="px-3 py-1.5 font-mono text-xs">
                     {l.code}
                     {i === 0 && d !== null && d >= 0 && l.qty > 0 && <span className="ml-2 font-sans text-[10px] text-brand-700">se vende primero</span>}
@@ -201,10 +207,10 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
                         {d! < 0 ? <Badge tone="red">vencido</Badge> : d! <= state.expiryWarnDays ? <Badge tone="amber">vence en {d} d</Badge> : null}
                       </span>
                     ) : (
-                      <span className="text-slate-400">No vence</span>
+                      <span className="text-ink-300">No vence</span>
                     )}
                   </td>
-                  <td className="tabular px-3 py-1.5 text-right font-medium">{l.qty}</td>
+                  <td className="tabular px-3 py-1.5 text-right font-bold">{l.qty}</td>
                 </tr>
               )
             })}
@@ -213,7 +219,7 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
       </div>
 
       {can(me.role, 'stock.ajustar') ? (
-        <div className="mb-4 rounded-lg bg-slate-50 p-3">
+        <div className="mb-4 rounded-lg bg-canvas p-3">
           <h3 className="mb-2 text-sm font-semibold">Ajuste de stock</h3>
           <div className="grid gap-2 sm:grid-cols-4">
             <Select value={lotId} onChange={(e) => setLotId(e.target.value)}>
@@ -250,7 +256,7 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
               <Input label="Vencimiento del lote nuevo" type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
             </div>
           )}
-          {msg && <div className="mt-2 text-xs text-slate-600">{msg}</div>}
+          {msg && <div className="mt-2 text-xs text-ink-600">{msg}</div>}
           <div className="mt-2">
             <Rule id="M2-R5">El stock nunca se edita directamente: cambia solo por ventas, compras o ajustes con motivo.</Rule>
           </div>
@@ -261,11 +267,11 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
         <div>
           <h3 className="mb-1 text-sm font-semibold">Historial de precios</h3>
           {history.length === 0 ? (
-            <p className="text-xs text-slate-500">Sin cambios registrados.</p>
+            <p className="text-xs text-ink-400">Sin cambios registrados.</p>
           ) : (
             history.map((h) => (
-              <div key={h.id} className="flex justify-between border-b border-slate-100 py-1 text-xs">
-                <span className="text-slate-500">
+              <div key={h.id} className="flex justify-between border-b border-ink-900/[0.06] py-1 text-xs">
+                <span className="text-ink-400">
                   {dateTime(h.at)} · {user(h.userId)}
                   {h.note && ` · ${h.note}`}
                 </span>
@@ -279,11 +285,11 @@ function ProductModal({ productId, onClose }: { productId: string; onClose: () =
         <div>
           <h3 className="mb-1 text-sm font-semibold">Últimos movimientos</h3>
           {moves.length === 0 ? (
-            <p className="text-xs text-slate-500">Sin movimientos en esta demo todavía.</p>
+            <p className="text-xs text-ink-400">Sin movimientos en esta demo todavía.</p>
           ) : (
             moves.map((m) => (
-              <div key={m.id} className="flex justify-between border-b border-slate-100 py-1 text-xs">
-                <span className="text-slate-500">
+              <div key={m.id} className="flex justify-between border-b border-ink-900/[0.06] py-1 text-xs">
+                <span className="text-ink-400">
                   {dateTime(m.at)} · {m.type}
                   {m.reason && ` · ${m.reason}`}
                 </span>
@@ -328,7 +334,7 @@ function BulkModal({ open, onClose, categories }: { open: boolean; onClose: () =
         </Select>
         <Input label="Porcentaje (+ aumento / - rebaja)" type="number" value={pct} onChange={(e) => setPct(e.target.value)} />
       </div>
-      <p className="mt-3 text-xs text-slate-500">Los precios se redondean a $10. El cambio rige desde que se guarda y conserva el historial del precio anterior (M2-R4).</p>
+      <p className="mt-3 text-xs text-ink-400">Los precios se redondean a $10. El cambio rige desde que se guarda y conserva el historial del precio anterior (M2-R4).</p>
       {done !== null && <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Listo: {done} precios actualizados.</div>}
     </Modal>
   )
@@ -415,8 +421,8 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         </Button>
       }
     >
-      <p className="text-sm text-slate-600">Carga inicial del catálogo (unos 500 artículos en el kiosco). Exportá la planilla como CSV con estas columnas:</p>
-      <code className="mt-2 block rounded bg-slate-50 px-2 py-1 text-xs">nombre; categoria; codigo; costo; precio; stock_minimo; stock</code>
+      <p className="text-sm text-ink-600">Carga inicial del catálogo (unos 500 artículos en el kiosco). Exportá la planilla como CSV con estas columnas:</p>
+      <code className="mt-2 block rounded bg-canvas px-2 py-1 text-xs">nombre; categoria; codigo; costo; precio; stock_minimo; stock</code>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button variant="secondary" onClick={() => file.current?.click()}>
           <FileUp size={16} /> Elegir archivo CSV
@@ -448,14 +454,14 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         />
       </div>
       {preview.length > 0 && (
-        <div className="mt-3 max-h-60 overflow-auto rounded-lg border border-slate-200">
+        <div className="mt-3 max-h-60 overflow-auto rounded-lg border border-ink-900/10">
           <table className="w-full text-xs">
             <tbody>
               {preview.map((r, i) => (
-                <tr key={i} className="border-t border-slate-100 first:border-0">
+                <tr key={i} className="border-t border-ink-900/[0.06] first:border-0">
                   <td className="px-2 py-1">{r.name}</td>
-                  <td className="px-2 py-1 text-slate-500">{r.category}</td>
-                  <td className="px-2 py-1 font-mono text-slate-500">{r.barcode ?? '—'}</td>
+                  <td className="px-2 py-1 text-ink-400">{r.category}</td>
+                  <td className="px-2 py-1 font-mono text-ink-400">{r.barcode ?? '—'}</td>
                   <td className="tabular px-2 py-1 text-right">{money(r.price)}</td>
                   <td className="tabular px-2 py-1 text-right">{r.qty} u.</td>
                 </tr>
@@ -466,5 +472,14 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       )}
       {done !== null && <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{done} productos importados. Ya están en el listado.</div>}
     </Modal>
+  )
+}
+
+function CategoryIcon({ category }: { category: string }) {
+  const { icon: Icon, tone } = categoryStyle(category)
+  return (
+    <span className={cx('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', tone)}>
+      <Icon size={17} />
+    </span>
   )
 }

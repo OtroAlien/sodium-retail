@@ -22,7 +22,7 @@ const MATRIX: [string, string, string, string][] = [
 
 function Cell({ v }: { v: string }) {
   if (v === 'Sí') return <Check size={16} className="mx-auto text-emerald-600" />
-  if (v === 'No') return <Minus size={16} className="mx-auto text-slate-300" />
+  if (v === 'No') return <Minus size={16} className="mx-auto text-ink-200" />
   return <span className="text-xs text-amber-700">{v}</span>
 }
 
@@ -49,23 +49,23 @@ export default function Usuarios() {
       <div className="grid gap-4 lg:grid-cols-[1fr_420px]">
         <Card className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-500">
+            <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
               <tr>
-                <th className="px-4 py-2 font-medium">Usuario</th>
-                <th className="px-4 py-2 font-medium">Rol</th>
-                <th className="px-4 py-2 font-medium">Negocio</th>
-                <th className="px-4 py-2 font-medium">Estado</th>
-                <th className="px-4 py-2" />
+                <th className="px-5 py-3 font-bold">Usuario</th>
+                <th className="px-5 py-3 font-bold">Rol</th>
+                <th className="px-5 py-3 font-bold">Negocio</th>
+                <th className="px-5 py-3 font-bold">Estado</th>
+                <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-t border-slate-100">
-                  <td className="px-4 py-2.5 font-medium">{u.name}</td>
-                  <td className="px-4 py-2.5">{roleLabel[u.role]}</td>
-                  <td className="px-4 py-2.5 text-slate-600">{u.businessId ? businesses[u.businessId].name : 'Ambos'}</td>
-                  <td className="px-4 py-2.5">{u.blocked ? <Badge tone="red">Bloqueado</Badge> : <Badge tone="green">Activo</Badge>}</td>
-                  <td className="px-4 py-2.5 text-right">
+                <tr key={u.id} className="border-t border-ink-900/[0.06] transition-colors hover:bg-brand-50/40">
+                  <td className="px-5 py-3.5 font-bold">{u.name}</td>
+                  <td className="px-5 py-3.5">{roleLabel[u.role]}</td>
+                  <td className="px-5 py-3.5 text-ink-600">{u.businessId ? businesses[u.businessId].name : 'Ambos'}</td>
+                  <td className="px-5 py-3.5">{u.blocked ? <Badge tone="red">Bloqueado</Badge> : <Badge tone="green">Activo</Badge>}</td>
+                  <td className="px-5 py-3.5 text-right">
                     {u.id !== me.id && (
                       <Button size="sm" variant="ghost" onClick={() => toggleBlock(u.id)}>
                         {u.blocked ? 'Desbloquear' : 'Bloquear'}
@@ -83,20 +83,20 @@ export default function Usuarios() {
         </Card>
 
         <Card className="overflow-x-auto">
-          <div className="border-b border-slate-100 px-4 py-3 font-semibold">Permisos por rol</div>
+          <div className="border-b border-ink-900/[0.06] px-4 py-3 font-semibold">Permisos por rol</div>
           <table className="w-full text-sm">
-            <thead className="text-xs text-slate-500">
+            <thead className="text-xs text-ink-400">
               <tr>
-                <th className="px-3 py-2 text-left font-medium">Acción</th>
-                <th className="px-2 py-2 font-medium">Admin.</th>
-                <th className="px-2 py-2 font-medium">Encarg.</th>
-                <th className="px-2 py-2 font-medium">Cajero</th>
+                <th className="px-3 py-2 text-left font-bold">Acción</th>
+                <th className="px-2 py-2 font-bold">Admin.</th>
+                <th className="px-2 py-2 font-bold">Encarg.</th>
+                <th className="px-2 py-2 font-bold">Cajero</th>
               </tr>
             </thead>
             <tbody>
               {MATRIX.map(([a, ...v]) => (
-                <tr key={a} className="border-t border-slate-100">
-                  <td className="px-3 py-1.5 text-slate-700">{a}</td>
+                <tr key={a} className="border-t border-ink-900/[0.06]">
+                  <td className="px-3 py-1.5 text-ink-700">{a}</td>
                   {v.map((x, i) => (
                     <td key={i} className="px-2 py-1.5 text-center">
                       <Cell v={x} />

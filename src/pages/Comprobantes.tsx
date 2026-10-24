@@ -47,9 +47,9 @@ export default function Comprobantes() {
         <Stat label="Rechazados" value={count('rechazado')} tone={count('rechazado') ? 'red' : undefined} />
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-white p-1 ring-1 ring-slate-200 sm:w-fit">
+      <div className="mb-3 flex gap-1 rounded-lg bg-white p-1 ring-1 ring-ink-200 sm:w-fit">
         {(['todos', 'emitido', 'pendiente', 'rechazado'] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)} className={cx('flex-1 rounded-md px-3 py-1 text-sm capitalize', filter === f ? 'bg-brand-700 text-white' : 'text-slate-600')}>
+          <button key={f} onClick={() => setFilter(f)} className={cx('flex-1 rounded-md px-3 py-1 text-sm capitalize', filter === f ? 'bg-brand-700 text-white' : 'text-ink-600')}>
             {f}
           </button>
         ))}
@@ -60,32 +60,32 @@ export default function Comprobantes() {
           <Empty>Todavía no hay comprobantes. Hacé una venta con Factura A o B.</Empty>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-500">
+            <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
               <tr>
-                <th className="px-4 py-2 font-medium">Comprobante</th>
-                <th className="px-4 py-2 font-medium">Número</th>
-                <th className="px-4 py-2 font-medium">Cliente</th>
-                <th className="px-4 py-2 font-medium">Fecha</th>
-                <th className="px-4 py-2 text-right font-medium">Total</th>
-                <th className="px-4 py-2 font-medium">CAE</th>
-                <th className="px-4 py-2 font-medium">Estado</th>
+                <th className="px-5 py-3 font-bold">Comprobante</th>
+                <th className="px-5 py-3 font-bold">Número</th>
+                <th className="px-5 py-3 font-bold">Cliente</th>
+                <th className="px-5 py-3 font-bold">Fecha</th>
+                <th className="px-5 py-3 text-right font-bold">Total</th>
+                <th className="px-5 py-3 font-bold">CAE</th>
+                <th className="px-5 py-3 font-bold">Estado</th>
               </tr>
             </thead>
             <tbody>
               {list.map((i) => (
-                <tr key={i.id} onClick={() => setOpen(i.id)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-2.5 font-medium">{i.kind}</td>
-                  <td className="tabular px-4 py-2.5 font-mono text-xs">{invoiceNumber(i.pointOfSale, i.number)}</td>
-                  <td className="px-4 py-2.5">
+                <tr key={i.id} onClick={() => setOpen(i.id)} className="cursor-pointer border-t border-ink-900/[0.06] hover:bg-canvas">
+                  <td className="px-5 py-3.5 font-bold">{i.kind}</td>
+                  <td className="tabular px-5 py-3.5 font-mono text-xs">{invoiceNumber(i.pointOfSale, i.number)}</td>
+                  <td className="px-5 py-3.5">
                     {i.customer.name}
-                    {i.customer.cuit && <div className="font-mono text-[11px] text-slate-500">{formatCuit(i.customer.cuit)}</div>}
+                    {i.customer.cuit && <div className="font-mono text-[11px] text-ink-400">{formatCuit(i.customer.cuit)}</div>}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-500">{dateTime(i.createdAt)}</td>
-                  <td className="tabular px-4 py-2.5 text-right">{money(i.total)}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-slate-500">{i.cae ?? '—'}</td>
-                  <td className="px-4 py-2.5">
+                  <td className="px-5 py-3.5 text-ink-400">{dateTime(i.createdAt)}</td>
+                  <td className="tabular px-5 py-3.5 text-right">{money(i.total)}</td>
+                  <td className="px-5 py-3.5 font-mono text-xs text-ink-400">{i.cae ?? '—'}</td>
+                  <td className="px-5 py-3.5">
                     <InvoiceStatusBadge inv={i} />
-                    {i.status !== 'emitido' && i.lastError && <div className="mt-0.5 max-w-[220px] text-[11px] text-slate-500">{i.lastError}</div>}
+                    {i.status !== 'emitido' && i.lastError && <div className="mt-0.5 max-w-[220px] text-[11px] text-ink-400">{i.lastError}</div>}
                   </td>
                 </tr>
               ))}

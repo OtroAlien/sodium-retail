@@ -41,7 +41,7 @@ export default function Sincronizacion() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-4 py-3">
             <span className="flex items-center gap-2 font-semibold">
               <CloudOff size={17} /> Cola local de operaciones
             </span>
@@ -57,17 +57,17 @@ export default function Sincronizacion() {
             ) : (
               <>
                 {state.queue.map((op) => (
-                  <div key={op.id} className="flex items-center justify-between border-b border-slate-100 px-4 py-2 text-sm last:border-0">
+                  <div key={op.id} className="flex items-center justify-between border-b border-ink-900/[0.06] px-4 py-2 text-sm last:border-0">
                     <span>{op.label}</span>
-                    <span className="text-xs text-slate-400">{time(op.at)}</span>
+                    <span className="text-xs text-ink-300">{time(op.at)}</span>
                   </div>
                 ))}
                 {state.remoteSales.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between border-b border-slate-100 bg-violet-50/50 px-4 py-2 text-sm last:border-0">
+                  <div key={r.id} className="flex items-center justify-between border-b border-ink-900/[0.06] bg-violet-50/50 px-4 py-2 text-sm last:border-0">
                     <span>
                       {r.register}: venta de {r.qty} × {state.products.find((p) => p.id === r.productId)?.name}
                     </span>
-                    <span className="text-xs text-slate-400">{time(r.at)}</span>
+                    <span className="text-xs text-ink-300">{time(r.at)}</span>
                   </div>
                 ))}
               </>
@@ -79,7 +79,7 @@ export default function Sincronizacion() {
           <div className="mb-1 flex items-center gap-2 font-semibold">
             <GitMerge size={17} /> Dos cajas vendiendo sin conexión
           </div>
-          <p className="mb-3 text-sm text-slate-600">
+          <p className="mb-3 text-sm text-ink-600">
             Simula que otra caja del local vendió el mismo producto mientras no había internet. Al sincronizar, el stock se calcula <b>sumando los movimientos</b> de ambas cajas, sin pisar
             cantidades.
           </p>
@@ -107,18 +107,18 @@ export default function Sincronizacion() {
       </div>
 
       <Card className="mt-4">
-        <div className="border-b border-slate-100 px-4 py-3 font-semibold">Registro de sincronización</div>
+        <div className="border-b border-ink-900/[0.06] px-4 py-3 font-semibold">Registro de sincronización</div>
         <div className="max-h-72 overflow-y-auto">
           {state.syncLog.length === 0 ? (
             <Empty>Sin eventos todavía.</Empty>
           ) : (
             state.syncLog.map((l) => (
-              <div key={l.id} className="flex items-start gap-3 border-b border-slate-100 px-4 py-2 text-sm last:border-0">
+              <div key={l.id} className="flex items-start gap-3 border-b border-ink-900/[0.06] px-4 py-2 text-sm last:border-0">
                 <span className="mt-0.5 shrink-0">
-                  {l.kind === 'ok' ? <CheckCircle2 size={16} className="text-emerald-600" /> : l.kind === 'conflicto' ? <GitMerge size={16} className="text-violet-600" /> : <Info size={16} className="text-slate-400" />}
+                  {l.kind === 'ok' ? <CheckCircle2 size={16} className="text-emerald-600" /> : l.kind === 'conflicto' ? <GitMerge size={16} className="text-violet-600" /> : <Info size={16} className="text-ink-300" />}
                 </span>
                 <span className="flex-1">{l.text}</span>
-                <span className="shrink-0 text-xs text-slate-400">{time(l.at)}</span>
+                <span className="shrink-0 text-xs text-ink-300">{time(l.at)}</span>
               </div>
             ))
           )}

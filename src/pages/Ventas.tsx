@@ -34,62 +34,62 @@ export default function Ventas() {
         tag="M1"
         subtitle={can(me.role, 'caja.verTodas') ? 'Todas las ventas del negocio.' : 'Tus ventas.'}
         actions={
-          <div className="flex rounded-lg bg-white p-1 ring-1 ring-slate-200">
+          <div className="flex rounded-lg bg-white p-1 ring-1 ring-ink-200">
             {(['hoy', 'semana'] as const).map((r) => (
-              <button key={r} onClick={() => setRange(r)} className={cx('rounded-md px-3 py-1 text-sm', range === r ? 'bg-brand-700 text-white' : 'text-slate-600')}>
+              <button key={r} onClick={() => setRange(r)} className={cx('rounded-md px-3 py-1 text-sm', range === r ? 'bg-brand-700 text-white' : 'text-ink-600')}>
                 {r === 'hoy' ? 'Hoy' : 'Últimos 7 días'}
               </button>
             ))}
           </div>
         }
       />
-      <div className="mb-3 text-sm text-slate-600">
-        {sales.length} ventas · <span className="tabular font-semibold text-slate-900">{money(total)}</span> cobrado (sin anuladas)
+      <div className="mb-3 text-sm text-ink-600">
+        {sales.length} ventas · <span className="tabular font-semibold text-ink-900">{money(total)}</span> cobrado (sin anuladas)
       </div>
       <Card className="overflow-x-auto">
         {sales.length === 0 ? (
           <Empty>No hay ventas en este período. Probá registrar una desde “Vender”.</Empty>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs text-slate-500">
+            <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
               <tr>
-                <th className="px-4 py-2 font-medium">N°</th>
-                <th className="px-4 py-2 font-medium">Fecha</th>
-                <th className="px-4 py-2 font-medium">Cajero</th>
-                <th className="px-4 py-2 font-medium">Pago</th>
-                <th className="px-4 py-2 font-medium">Comprobante</th>
-                <th className="px-4 py-2 text-right font-medium">Total</th>
-                <th className="px-4 py-2 font-medium">Estado</th>
+                <th className="px-5 py-3 font-bold">N°</th>
+                <th className="px-5 py-3 font-bold">Fecha</th>
+                <th className="px-5 py-3 font-bold">Cajero</th>
+                <th className="px-5 py-3 font-bold">Pago</th>
+                <th className="px-5 py-3 font-bold">Comprobante</th>
+                <th className="px-5 py-3 text-right font-bold">Total</th>
+                <th className="px-5 py-3 font-bold">Estado</th>
               </tr>
             </thead>
             <tbody>
               {sales.slice(0, 200).map((s) => {
                 const inv = state.invoices.find((i) => i.id === s.invoiceId)
                 return (
-                  <tr key={s.id} onClick={() => setSelected(s)} className="cursor-pointer border-t border-slate-100 hover:bg-slate-50">
-                    <td className="tabular px-4 py-2.5 font-medium">#{s.number}</td>
-                    <td className="px-4 py-2.5 text-slate-500">
+                  <tr key={s.id} onClick={() => setSelected(s)} className="cursor-pointer border-t border-ink-900/[0.06] hover:bg-canvas">
+                    <td className="tabular px-5 py-3.5 font-bold">#{s.number}</td>
+                    <td className="px-5 py-3.5 text-ink-400">
                       <span className="flex items-center gap-1.5">
                         {dateTime(s.at)}
-                        {s.createdOffline && <WifiOff size={12} className="text-slate-400" aria-label="Registrada sin conexión" />}
+                        {s.createdOffline && <WifiOff size={12} className="text-ink-300" aria-label="Registrada sin conexión" />}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5">{user(s.userId)}</td>
-                    <td className="px-4 py-2.5 text-slate-600">{s.payments.length > 1 ? 'Mixto' : s.payments[0]?.method === 'efectivo' ? 'Efectivo' : 'Transferencia'}</td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-5 py-3.5">{user(s.userId)}</td>
+                    <td className="px-5 py-3.5 text-ink-600">{s.payments.length > 1 ? 'Mixto' : s.payments[0]?.method === 'efectivo' ? 'Efectivo' : 'Transferencia'}</td>
+                    <td className="px-5 py-3.5">
                       {inv ? (
                         <span className="flex items-center gap-1.5">
-                          <span className="text-slate-600">{inv.kind.replace('Factura ', 'Fact. ')}</span>
+                          <span className="text-ink-600">{inv.kind.replace('Factura ', 'Fact. ')}</span>
                           <InvoiceStatusBadge inv={inv} />
                         </span>
                       ) : s.seeded ? (
-                        <span className="text-slate-400">Fact. B</span>
+                        <span className="text-ink-300">Fact. B</span>
                       ) : (
-                        <span className="text-slate-400">Interno</span>
+                        <span className="text-ink-300">Interno</span>
                       )}
                     </td>
-                    <td className={cx('tabular px-4 py-2.5 text-right font-medium', s.status === 'anulada' && 'text-slate-400 line-through')}>{money(s.total)}</td>
-                    <td className="px-4 py-2.5">{s.status === 'anulada' ? <Badge tone="red">Anulada</Badge> : <Badge tone="green">Completada</Badge>}</td>
+                    <td className={cx('tabular px-5 py-3.5 text-right font-medium', s.status === 'anulada' && 'text-ink-300 line-through')}>{money(s.total)}</td>
+                    <td className="px-5 py-3.5">{s.status === 'anulada' ? <Badge tone="red">Anulada</Badge> : <Badge tone="green">Completada</Badge>}</td>
                   </tr>
                 )
               })}
@@ -127,7 +127,7 @@ export default function Ventas() {
                 })()}
               </div>
             )}
-            {live.seeded && <div className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">Venta histórica de ejemplo (sin comprobante detallado).</div>}
+            {live.seeded && <div className="mb-3 rounded-lg bg-canvas px-3 py-2 text-xs text-ink-400">Venta histórica de ejemplo (sin comprobante detallado).</div>}
             <Receipt sale={live} />
           </>
         )}
