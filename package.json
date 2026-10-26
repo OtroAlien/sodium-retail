@@ -1,12 +1,14 @@
 {
   "name": "sodium-retail",
   "private": true,
+  "engines": { "node": ">=20" },
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.mjs"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
