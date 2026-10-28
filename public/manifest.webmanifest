@@ -1,11 +1,11 @@
 {
-  "name": "Súper y Kiosco",
-  "short_name": "Caja",
-  "description": "Sistema de gestión con facturación ARCA y funcionamiento sin internet (demo)",
+  "name": "Gestión de negocios",
+  "short_name": "Negocios",
+  "description": "Kiosco, supermercado, ferretería y alquiler de ski: gestión con facturación ARCA y funcionamiento sin internet (demo)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f4fa",
-  "theme_color": "#0e0b1a",
+  "background_color": "#0c1622",
+  "theme_color": "#0c1622",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

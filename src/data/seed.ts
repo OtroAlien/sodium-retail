@@ -1,10 +1,13 @@
 // Datos de ejemplo para la demo. Todo es ficticio.
-import type { Business, BusinessId, Lot, Product, Sale, User } from '../types'
+import type { Business, BusinessId, Lot, Product, User } from '../types'
 import { addDays } from '../lib/format'
+
+export const BUSINESS_IDS: BusinessId[] = ['kiosco', 'super', 'ferreteria', 'alquiler']
 
 export const businesses: Record<BusinessId, Business> = {
   kiosco: {
     id: 'kiosco',
+    kind: 'retail',
     name: 'Kiosco',
     legalName: 'Kiosco Minimarket (demo)',
     cuit: '20123456786',
@@ -12,9 +15,11 @@ export const businesses: Record<BusinessId, Business> = {
     address: 'Av. Arístides Villanueva 410, Mendoza',
     pointOfSale: 1,
     transferAccounts: ['Alias KIOSCO.MZA (Mercado Pago)', 'CBU Banco Nación ···4521'],
+    color: '#BF8A24',
   },
   super: {
     id: 'super',
+    kind: 'retail',
     name: 'Supermercado',
     legalName: 'Supermercado (demo)',
     cuit: '30714567892',
@@ -22,6 +27,31 @@ export const businesses: Record<BusinessId, Business> = {
     address: 'Calle San Juan 1550, Mendoza',
     pointOfSale: 2,
     transferAccounts: ['Alias SUPER.MZA.CAJA (Banco Galicia)', 'Alias SUPER.MZA (Mercado Pago)'],
+    color: '#2EA57C',
+  },
+  ferreteria: {
+    id: 'ferreteria',
+    kind: 'hardware',
+    name: 'Ferretería',
+    legalName: 'Ferretería (demo)',
+    cuit: '30716543217',
+    ivaCondition: 'IVA Responsable Inscripto',
+    address: 'Av. San Martín Sur 2380, Godoy Cruz',
+    pointOfSale: 3,
+    transferAccounts: ['Alias FERRE.MZA (Banco Macro)', 'Alias FERRE.MP (Mercado Pago)'],
+    color: '#E0654A',
+  },
+  alquiler: {
+    id: 'alquiler',
+    kind: 'rental',
+    name: 'Ski & Snowboard',
+    legalName: 'Alquiler Ski & Snowboard (demo)',
+    cuit: '20287654328',
+    ivaCondition: 'IVA Responsable Inscripto',
+    address: 'Ruta 82, Potrerillos (camino a Penitentes)',
+    pointOfSale: 4,
+    transferAccounts: ['Alias SKI.RENTAL.MZA (Mercado Pago)'],
+    color: '#5B8EE6',
   },
 }
 
@@ -32,10 +62,14 @@ export const seedUsers: User[] = [
   { id: 'u-sofia', name: 'Sofía Herrera', role: 'encargado', businessId: 'super', pin: '4444', blocked: false },
   { id: 'u-lucas', name: 'Lucas Morales', role: 'cajero', businessId: 'super', pin: '5555', blocked: false },
   { id: 'u-pablo', name: 'Pablo Díaz', role: 'cajero', businessId: 'super', pin: '6666', blocked: true },
+  { id: 'u-ruben', name: 'Rubén Gil', role: 'encargado', businessId: 'ferreteria', pin: '7777', blocked: false },
+  { id: 'u-carla', name: 'Carla Ortiz', role: 'cajero', businessId: 'ferreteria', pin: '8888', blocked: false, overrides: { descuento: true } },
+  { id: 'u-nico', name: 'Nicolás Vera', role: 'encargado', businessId: 'alquiler', pin: '9999', blocked: false },
+  { id: 'u-juli', name: 'Julieta Ríos', role: 'cajero', businessId: 'alquiler', pin: '1234', blocked: false },
 ]
 
 // [nombre, categoría, ¿tiene código cargado?, costo, precio, stock mínimo, lotes [cantidad, días hasta vencer | null]]
-type Row = [string, string, boolean, number, number, number, [number, number | null][]]
+export type Row = [string, string, boolean, number, number, number, [number, number | null][]]
 
 const kioscoRows: Row[] = [
   ['Coca-Cola 500 ml', 'Bebidas', true, 900, 1500, 24, [[48, 120]]],
@@ -99,8 +133,20 @@ const superRows: Row[] = [
   ['Papa x kg', 'Verdulería', false, 700, 1200, 20, [[60, 15]]],
 ]
 
+// el local de alquiler también vende accesorios
+const alquilerRows: Row[] = [
+  ['Cuello polar', 'Accesorios', true, 4500, 9000, 6, [[18, null]]],
+  ['Medias térmicas de esquí', 'Accesorios', true, 5200, 9800, 8, [[24, null]]],
+  ['Guantes de nieve (venta)', 'Accesorios', true, 9500, 17500, 4, [[9, null]]],
+  ['Protector solar FPS 50', 'Cuidado', true, 6800, 11900, 6, [[14, 300]]],
+  ['Protector labial', 'Cuidado', true, 2100, 4200, 10, [[30, 400]]],
+  ['Cera para tablas', 'Servicio', true, 3500, 7500, 5, [[12, null]]],
+  ['Gorro de lana', 'Accesorios', true, 5500, 10500, 6, [[3, null]]],
+  ['Calentadores de manos x2', 'Accesorios', true, 1800, 3900, 10, [[40, 500]]],
+]
+
 /** EAN-13 argentino (779) con dígito verificador correcto */
-function ean13(seed: number) {
+export function ean13(seed: number) {
   const base = '779' + String(1000000000 + seed * 7919).slice(-9)
   const sum = base.split('').reduce((acc, d, i) => acc + Number(d) * (i % 2 ? 3 : 1), 0)
   return base + ((10 - (sum % 10)) % 10)
@@ -112,7 +158,7 @@ function build(businessId: BusinessId, rows: Row[], offset: number) {
   rows.forEach(([name, category, hasCode, cost, price, minStock, lotRows], i) => {
     const id = `p-${businessId}-${i + 1}`
     const tracksLots = lotRows.some(([, exp]) => exp !== null)
-    products.push({ id, businessId, name, category, barcode: hasCode ? ean13(offset + i) : null, cost, price, minStock, tracksLots })
+    products.push({ id, businessId, name, category, barcode: hasCode ? ean13(offset + i) : null, cost, price, minStock, tracksLots, baseUnit: 'u' })
     lotRows.forEach(([qty, exp], j) => {
       lots.push({
         id: `l-${businessId}-${i + 1}-${j + 1}`,
@@ -126,64 +172,18 @@ function build(businessId: BusinessId, rows: Row[], offset: number) {
   return { products, lots }
 }
 
+export function buildRetailCatalog() {
+  const k = build('kiosco', kioscoRows, 100)
+  const s = build('super', superRows, 500)
+  const a = build('alquiler', alquilerRows, 900)
+  return { products: [...k.products, ...s.products, ...a.products], lots: [...k.lots, ...s.lots, ...a.lots] }
+}
+
 /** generador pseudoaleatorio con semilla, para que la demo siempre arranque igual */
-function rng(seed: number) {
+export function rng(seed: number) {
   let s = seed
   return () => {
     s = (s * 1664525 + 1013904223) % 4294967296
     return s / 4294967296
   }
-}
-
-function historicalSales(businessId: BusinessId, products: Product[], userIds: string[], perDay: number): Sale[] {
-  const rand = rng(businessId === 'kiosco' ? 7 : 13)
-  const sales: Sale[] = []
-  let n = 1
-  for (let day = 7; day >= 1; day--) {
-    const count = Math.round(perDay * (0.75 + rand() * 0.5))
-    for (let k = 0; k < count; k++) {
-      const d = new Date()
-      d.setDate(d.getDate() - day)
-      d.setHours(8 + Math.floor(rand() * 13), Math.floor(rand() * 60), 0, 0)
-      const itemsCount = 1 + Math.floor(rand() * (businessId === 'kiosco' ? 3 : 6))
-      const items = Array.from({ length: itemsCount }, () => {
-        // los primeros productos se venden más (rotación desigual)
-        const p = products[Math.floor(Math.pow(rand(), 1.8) * products.length)]
-        const qty = 1 + Math.floor(rand() * 2)
-        return { productId: p.id, name: p.name, qty, unitPrice: p.price, allocations: [] }
-      })
-      const total = items.reduce((a, it) => a + it.qty * it.unitPrice, 0)
-      const cash = rand() < 0.6
-      sales.push({
-        id: `s-hist-${businessId}-${n}`,
-        number: n++,
-        businessId,
-        sessionId: 'hist',
-        userId: userIds[Math.floor(rand() * userIds.length)],
-        at: d.toISOString(),
-        items,
-        subtotal: total,
-        discountPct: 0,
-        total,
-        payments: [{ method: cash ? 'efectivo' : 'transferencia', amount: total }],
-        receiptKind: 'B',
-        status: 'completada',
-        createdOffline: rand() < 0.15,
-        seeded: true,
-      })
-    }
-  }
-  return sales
-}
-
-export function buildSeed() {
-  const k = build('kiosco', kioscoRows, 100)
-  const s = build('super', superRows, 500)
-  const products = [...k.products, ...s.products]
-  const lots = [...k.lots, ...s.lots]
-  const sales = [
-    ...historicalSales('kiosco', k.products, ['u-laura', 'u-diego'], 35),
-    ...historicalSales('super', s.products, ['u-sofia', 'u-lucas'], 45),
-  ]
-  return { products, lots, sales }
 }

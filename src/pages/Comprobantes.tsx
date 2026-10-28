@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
-import { RefreshCw, ServerCrash } from 'lucide-react'
+import { FileSearch, RefreshCw, ServerCrash } from 'lucide-react'
 import { useOnline, useStore } from '../store'
 import { dateTime, formatCuit, money } from '../lib/format'
 import { invoiceNumber } from '../lib/arca'
-import type { InvoiceStatus } from '../types'
-import { Button, Card, Empty, Modal, PageHeader, Rule, Stat, cx } from '../components/ui'
+import type { Invoice, InvoiceStatus } from '../types'
+import { Button, Card, Empty, Modal, PageHeader, Rule, Segmented, Stat } from '../components/ui'
 import Receipt, { InvoiceStatusBadge } from '../components/Receipt'
+import { DataTable, type Col } from '../components/DataTable'
 
 export default function Comprobantes() {
   const state = useStore()
@@ -19,6 +20,36 @@ export default function Comprobantes() {
   const inv = all.find((i) => i.id === open)
   const sale = inv && state.sales.find((s) => s.id === inv.saleId)
 
+  const columns: Col<Invoice>[] = [
+    { key: 'kind', header: 'Comprobante', mobile: 'title', className: 'font-semibold', cell: (i) => i.kind },
+    { key: 'total', header: 'Total', align: 'right', mobile: 'value', cell: (i) => <span className="tabular whitespace-nowrap font-semibold">{money(i.total)}</span> },
+    { key: 'num', header: 'Número', className: 'tabular font-mono text-xs whitespace-nowrap', cell: (i) => invoiceNumber(i.pointOfSale, i.number) },
+    {
+      key: 'cliente',
+      header: 'Cliente',
+      className: 'min-w-[10rem]',
+      cell: (i) => (
+        <>
+          <span className="wrap-any">{i.customer.name}</span>
+          {i.customer.cuit && <div className="font-mono text-xs text-ink-300">CUIT {formatCuit(i.customer.cuit)}</div>}
+        </>
+      ),
+    },
+    { key: 'fecha', header: 'Fecha', className: 'whitespace-nowrap text-ink-200', cell: (i) => dateTime(i.createdAt) },
+    { key: 'cae', header: 'CAE', className: 'font-mono text-xs text-ink-200', cell: (i) => i.cae ?? 'Todavía sin CAE' },
+    {
+      key: 'estado',
+      header: 'Estado',
+      className: 'min-w-[11rem]',
+      cell: (i) => (
+        <>
+          <InvoiceStatusBadge inv={i} />
+          {i.status !== 'emitido' && i.lastError && <div className="mt-1 text-xs leading-snug text-ink-200">{i.lastError}</div>}
+        </>
+      ),
+    },
+  ]
+
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
@@ -27,70 +58,47 @@ export default function Comprobantes() {
         subtitle="Facturas A y B y notas de crédito emitidas desde la venta, sin tipear nada en otro sistema."
         actions={
           <Button variant="secondary" disabled={!online || !count('pendiente')} onClick={() => state.retryPendingInvoices()}>
-            <RefreshCw size={16} /> Reintentar pendientes
+            <RefreshCw size={16} aria-hidden /> Reintentar pendientes
           </Button>
         }
       />
 
       {(state.arcaDown || !online) && (
-        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          <ServerCrash size={18} className="mt-0.5 shrink-0" />
+        <div role="status" className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm text-amber-100">
+          <ServerCrash size={18} className="mt-0.5 shrink-0" aria-hidden />
           <div>
             <b>Modo contingencia.</b> {!online ? 'No hay internet.' : 'ARCA no responde.'} Las ventas se completan igual y los comprobantes quedan pendientes. Se reintentan solos cada pocos segundos.
           </div>
         </div>
       )}
 
-      <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
         <Stat label="Emitidos" value={count('emitido')} tone="green" />
         <Stat label="Pendientes" value={count('pendiente')} tone={count('pendiente') ? 'amber' : undefined} />
         <Stat label="Rechazados" value={count('rechazado')} tone={count('rechazado') ? 'red' : undefined} />
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-white p-1 ring-1 ring-ink-200 sm:w-fit">
-        {(['todos', 'emitido', 'pendiente', 'rechazado'] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)} className={cx('flex-1 rounded-md px-3 py-1 text-sm capitalize', filter === f ? 'bg-brand-700 text-white' : 'text-ink-600')}>
-            {f}
-          </button>
-        ))}
+      <div className="mb-3">
+        <Segmented
+          label="Filtrar por estado"
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: 'todos', label: 'Todos' },
+            { value: 'emitido', label: 'Emitidos' },
+            { value: 'pendiente', label: 'Pendientes' },
+            { value: 'rechazado', label: 'Rechazados' },
+          ]}
+        />
       </div>
 
-      <Card className="overflow-x-auto">
+      <Card>
         {list.length === 0 ? (
-          <Empty>Todavía no hay comprobantes. Hacé una venta con Factura A o B.</Empty>
+          <Empty icon={<FileSearch size={22} />} action={filter !== 'todos' && <Button variant="secondary" onClick={() => setFilter('todos')}>Ver todos</Button>}>
+            {filter === 'todos' ? 'Todavía no hay comprobantes. Hacé una venta con Factura A o B y aparece acá.' : `No hay comprobantes ${filter === 'emitido' ? 'emitidos' : filter === 'pendiente' ? 'pendientes' : 'rechazados'} en este negocio.`}
+          </Empty>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-canvas/60 text-left text-[11px] uppercase tracking-wider text-ink-400">
-              <tr>
-                <th className="px-5 py-3 font-bold">Comprobante</th>
-                <th className="px-5 py-3 font-bold">Número</th>
-                <th className="px-5 py-3 font-bold">Cliente</th>
-                <th className="px-5 py-3 font-bold">Fecha</th>
-                <th className="px-5 py-3 text-right font-bold">Total</th>
-                <th className="px-5 py-3 font-bold">CAE</th>
-                <th className="px-5 py-3 font-bold">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((i) => (
-                <tr key={i.id} onClick={() => setOpen(i.id)} className="cursor-pointer border-t border-ink-900/[0.06] hover:bg-canvas">
-                  <td className="px-5 py-3.5 font-bold">{i.kind}</td>
-                  <td className="tabular px-5 py-3.5 font-mono text-xs">{invoiceNumber(i.pointOfSale, i.number)}</td>
-                  <td className="px-5 py-3.5">
-                    {i.customer.name}
-                    {i.customer.cuit && <div className="font-mono text-[11px] text-ink-400">{formatCuit(i.customer.cuit)}</div>}
-                  </td>
-                  <td className="px-5 py-3.5 text-ink-400">{dateTime(i.createdAt)}</td>
-                  <td className="tabular px-5 py-3.5 text-right">{money(i.total)}</td>
-                  <td className="px-5 py-3.5 font-mono text-xs text-ink-400">{i.cae ?? '—'}</td>
-                  <td className="px-5 py-3.5">
-                    <InvoiceStatusBadge inv={i} />
-                    {i.status !== 'emitido' && i.lastError && <div className="mt-0.5 max-w-[220px] text-[11px] text-ink-400">{i.lastError}</div>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable caption="Listado de comprobantes" columns={columns} rows={list} rowKey={(i) => i.id} onRowClick={(i) => setOpen(i.id)} rowLabel={(i) => `${i.kind} ${invoiceNumber(i.pointOfSale, i.number)}. Ver comprobante`} />
         )}
       </Card>
 

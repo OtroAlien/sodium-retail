@@ -63,14 +63,14 @@ export default function Scanner({ open, onClose, onCode }: { open: boolean; onCl
   return (
     <Modal open={open} onClose={onClose} title="Escanear con la cámara">
       {error ? (
-        <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{error}</div>
+        <div className="rounded-lg bg-amber-400/12 p-3 text-sm text-amber-200">{error}</div>
       ) : (
         <div className="relative overflow-hidden rounded-xl bg-black">
           <video ref={video} className="aspect-[4/3] w-full object-cover" muted playsInline />
           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-0.5 -translate-y-1/2 bg-rose-500/80" />
         </div>
       )}
-      <p className="mt-3 text-xs text-ink-400">Apuntá al código de barras del producto. Se agrega solo al leerlo.</p>
+      <p className="mt-3 text-xs text-ink-300">Apuntá al código de barras del producto. Se agrega solo al leerlo.</p>
     </Modal>
   )
 }

@@ -14,9 +14,9 @@ export default function Sincronizacion() {
 
   const status = state.syncing ? 'sync' : online ? 'on' : 'off'
   const head = {
-    on: { icon: Wifi, title: 'Con conexión', text: pending ? 'Enviando operaciones al servidor…' : 'Todo sincronizado con el servidor central.', cls: 'from-emerald-500 to-emerald-600' },
-    off: { icon: WifiOff, title: 'Sin conexión', text: 'La caja sigue vendiendo. Las operaciones se guardan en el equipo y se envían al volver internet.', cls: 'from-rose-500 to-rose-600' },
-    sync: { icon: RefreshCw, title: 'Sincronizando…', text: 'Enviando operaciones y conciliando stock con las demás cajas.', cls: 'from-amber-500 to-amber-600' },
+    on: { icon: Wifi, title: 'Con conexión', text: pending ? 'Enviando operaciones al servidor…' : 'Todo sincronizado con el servidor central.', cls: 'from-emerald-400/25 to-emerald-400/5 ring-1 ring-inset ring-emerald-300/30 backdrop-blur-xl' },
+    off: { icon: WifiOff, title: 'Sin conexión', text: 'La caja sigue vendiendo. Las operaciones se guardan en el equipo y se envían al volver internet.', cls: 'from-rose-400/30 to-rose-400/5 ring-1 ring-inset ring-rose-300/35 backdrop-blur-xl' },
+    sync: { icon: RefreshCw, title: 'Sincronizando…', text: 'Enviando operaciones y conciliando stock con las demás cajas.', cls: 'from-amber-400/25 to-amber-400/5 ring-1 ring-inset ring-amber-300/30 backdrop-blur-xl' },
   }[status]
 
   return (
@@ -41,7 +41,7 @@ export default function Sincronizacion() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-4 py-3">
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <span className="flex items-center gap-2 font-semibold">
               <CloudOff size={17} /> Cola local de operaciones
             </span>
@@ -57,17 +57,17 @@ export default function Sincronizacion() {
             ) : (
               <>
                 {state.queue.map((op) => (
-                  <div key={op.id} className="flex items-center justify-between border-b border-ink-900/[0.06] px-4 py-2 text-sm last:border-0">
+                  <div key={op.id} className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-sm last:border-0">
                     <span>{op.label}</span>
-                    <span className="text-xs text-ink-300">{time(op.at)}</span>
+                    <span className="text-xs text-ink-400">{time(op.at)}</span>
                   </div>
                 ))}
                 {state.remoteSales.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between border-b border-ink-900/[0.06] bg-violet-50/50 px-4 py-2 text-sm last:border-0">
+                  <div key={r.id} className="flex items-center justify-between border-b border-white/10 bg-white/[0.04] px-4 py-2 text-sm last:border-0">
                     <span>
                       {r.register}: venta de {r.qty} × {state.products.find((p) => p.id === r.productId)?.name}
                     </span>
-                    <span className="text-xs text-ink-300">{time(r.at)}</span>
+                    <span className="text-xs text-ink-400">{time(r.at)}</span>
                   </div>
                 ))}
               </>
@@ -79,24 +79,24 @@ export default function Sincronizacion() {
           <div className="mb-1 flex items-center gap-2 font-semibold">
             <GitMerge size={17} /> Dos cajas vendiendo sin conexión
           </div>
-          <p className="mb-3 text-sm text-ink-600">
+          <p className="mb-3 text-sm text-ink-200">
             Simula que otra caja del local vendió el mismo producto mientras no había internet. Al sincronizar, el stock se calcula <b>sumando los movimientos</b> de ambas cajas, sin pisar
             cantidades.
           </p>
           <div className="grid grid-cols-[90px_1fr] gap-2">
-            <Select className="col-span-2" value={pid} onChange={(e) => setPid(e.target.value)}>
+            <Select aria-label="Producto vendido en la otra caja" className="col-span-2" value={pid} onChange={(e) => setPid(e.target.value)}>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} (stock {stockOf(state.lots, p.id)})
                 </option>
               ))}
             </Select>
-            <Input type="number" min={1} value={qty} onChange={(e) => setQty(e.target.value)} />
+            <Input aria-label="Cantidad vendida" type="number" inputMode="numeric" min={1} value={qty} onChange={(e) => setQty(e.target.value)} />
             <Button variant="secondary" disabled={!Number(qty)} onClick={() => state.simulateRemoteSale(pid, Number(qty))}>
               Venta en Caja 2
             </Button>
           </div>
-          <div className="mt-3 rounded-lg bg-sky-50 p-3 text-xs text-sky-900">
+          <div className="mt-3 rounded-lg bg-sky-400/12 p-3 text-xs text-sky-200">
             <div className="mb-1 flex items-center gap-1.5 font-semibold">
               <Info size={14} /> Cómo mostrarlo
             </div>
@@ -107,18 +107,18 @@ export default function Sincronizacion() {
       </div>
 
       <Card className="mt-4">
-        <div className="border-b border-ink-900/[0.06] px-4 py-3 font-semibold">Registro de sincronización</div>
+        <div className="border-b border-white/10 px-4 py-3 font-semibold">Registro de sincronización</div>
         <div className="max-h-72 overflow-y-auto">
           {state.syncLog.length === 0 ? (
             <Empty>Sin eventos todavía.</Empty>
           ) : (
             state.syncLog.map((l) => (
-              <div key={l.id} className="flex items-start gap-3 border-b border-ink-900/[0.06] px-4 py-2 text-sm last:border-0">
+              <div key={l.id} className="flex items-start gap-3 border-b border-white/10 px-4 py-2 text-sm last:border-0">
                 <span className="mt-0.5 shrink-0">
-                  {l.kind === 'ok' ? <CheckCircle2 size={16} className="text-emerald-600" /> : l.kind === 'conflicto' ? <GitMerge size={16} className="text-violet-600" /> : <Info size={16} className="text-ink-300" />}
+                  {l.kind === 'ok' ? <CheckCircle2 size={16} className="text-emerald-300" /> : l.kind === 'conflicto' ? <GitMerge size={16} className="text-brand-200" /> : <Info size={16} className="text-ink-400" />}
                 </span>
                 <span className="flex-1">{l.text}</span>
-                <span className="shrink-0 text-xs text-ink-300">{time(l.at)}</span>
+                <span className="shrink-0 text-xs text-ink-400">{time(l.at)}</span>
               </div>
             ))
           )}
